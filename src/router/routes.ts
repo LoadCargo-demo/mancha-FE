@@ -11,6 +11,10 @@ export const ROUTES = {
   negotiationEvidence: '/negotiation/evidence',
   negotiationCompare: '/negotiation/compare',
   negotiationResult: '/negotiation/result',
+  drivingMode1: '/driving/1',
+  drivingMode2: '/driving/2',
+  drivingMode3: '/driving/3',
+  Reassembly: '/Reassembly',
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;
