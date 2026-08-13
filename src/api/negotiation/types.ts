@@ -10,6 +10,7 @@ export type CostProfileResponse = {
     cost_per_km: number;
     value_per_hour: number;
     min_fare_per_km: number;
+    daily_min_revenue: number;
   };
 };
 
