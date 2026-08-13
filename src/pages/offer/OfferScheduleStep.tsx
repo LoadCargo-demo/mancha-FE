@@ -59,6 +59,9 @@ export default function OfferScheduleStep() {
         setConstraints(res.prefill);
         setAiSuggestionMessage(res.ai_suggestion.message);
       })
+      .catch((err) => {
+        if (!cancelled) console.error('기준 정보 불러오기 실패:', err);
+      })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
       });

@@ -66,6 +66,9 @@ export default function NegotiationCallScreen() {
         setBriefing(res);
         setRecommendedPackageId(res.recommended_package_id);
       })
+      .catch((err) => {
+        if (!cancelled) console.error('브리핑 불러오기 실패:', err);
+      })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
       });
