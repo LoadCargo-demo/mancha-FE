@@ -5,8 +5,8 @@
 //  - VoiceConfirm: "N안 확정" 큰 버튼 + 우측 음성 아이콘 버튼
 //  - Route       : "경로 안내 시작" 아이콘 포함 단일 버튼
 
-import imgMicIcon from '../../assets/icons/mic.svg';
 import imgRouteIcon from '../../assets/icons/navigation.svg';
+import Mic from '@iconify-react/material-symbols-light/mic';
 
 export type BottomCTAType =
   'Single' | 'Briefing' | 'Route' | 'Split' | 'VoiceConfirm';
@@ -49,8 +49,7 @@ export default function BottomCTA({
     Briefing: 'bg-white flex-col gap-[12px] p-[20px]',
     Split:
       'bg-white border-[var(--color-gray-200)] border-solid border-t drop-shadow-[0px_-4px_10px_var(--color-black-alpha-5)] gap-[8px] pb-[32px] pt-[17px] px-[20px]',
-    VoiceConfirm:
-      'flex-col bg-gradient-to-t from-[#f7f9fb] via-[#f7f9fb] to-[rgba(247,249,251,0)] pb-[32px] pt-[16px] px-[20px]',
+    VoiceConfirm: 'flex-col bg-transparent pb-[32px] pt-[16px] px-[20px]',
     Route: 'flex-col px-[20px]',
   };
 
@@ -140,7 +139,7 @@ export default function BottomCTA({
           <button
             type="button"
             onClick={onPrimaryClick}
-            className="bg-[var(--color-blue-cta)] flex flex-1 h-[56px] items-center justify-center rounded-[12px] shadow-[0px_4px_6px_-1px_var(--color-black-alpha-8),0px_2px_4px_-2px_var(--color-black-alpha-8)]"
+            className="bg-[var(--color-blue-cta)] flex flex-1 h-[56px] items-center justify-center rounded-[12px] shadow-[0px_2px_4px_-2px_rgba(0,0,0,0.08)] shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.08)]"
           >
             <span className="font-semibold leading-[27px] text-[18px] text-[color:var(--color-text-inverse)]">
               {confirmLabel.replace('으로 확정', ' 확정')}
@@ -150,9 +149,13 @@ export default function BottomCTA({
             type="button"
             onClick={onVoiceClick}
             aria-label="음성으로 답하기"
-            className="bg-[var(--color-blue-50)] flex items-center justify-center rounded-[12px] shrink-0 size-[56px] shadow-[0px_4px_6px_-1px_var(--color-black-alpha-8),0px_2px_4px_-2px_var(--color-black-alpha-8)]"
+            className="bg-[var(--color-blue-50)] flex items-center justify-center rounded-[12px] shrink-0 size-[56px] shadow-[0px_2px_4px_-2px_rgba(0,0,0,0.08)] shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.08)]"
           >
-            <img alt="" src={imgMicIcon} className="h-[22px] w-[16px]" />
+            <Mic
+              width="20"
+              height="20"
+              className="text-[color:var(--color-action-primary)]"
+            />
           </button>
         </div>
       )}

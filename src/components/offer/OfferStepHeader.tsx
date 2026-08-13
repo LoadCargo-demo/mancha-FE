@@ -23,7 +23,7 @@ export default function OfferStepHeader({
         />
       </div>
 
-      <div className="flex flex-col gap-[8px] px-[var(--spacing-screen)] pb-[8px] pt-[24px]">
+      <div className="flex flex-col gap-[8px] px-[var(--spacing-screen)] pb-[16px] pt-[24px]">
         <h1 className="whitespace-pre-line text-[22px] font-bold leading-[1.35] text-[color:var(--color-text-primary)]">
           {title}
         </h1>

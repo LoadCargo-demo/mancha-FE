@@ -9,7 +9,7 @@ export type ChipProps = {
 
 export default function Chip({ label, onRemove }: ChipProps) {
   return (
-    <span className="flex items-center gap-[4px] rounded-full bg-[var(--color-gray-100)] py-[8px] pl-[12px] pr-[8px] text-[13px] font-medium text-[color:var(--color-text-primary)]">
+    <span className="flex h-[40px] items-center gap-[4px] rounded-full bg-[var(--color-gray-800)] py-[8px] pl-[16px] pr-[12px] text-[13px] font-medium text-[color:var(--color-text-inverse)]">
       {label}
       {onRemove && (
         <button
@@ -21,7 +21,7 @@ export default function Chip({ label, onRemove }: ChipProps) {
           <Close
             width="14"
             height="14"
-            className="text-[color:var(--color-gray-400)]"
+            className="text-[color:var(--color-text-inverse)] opacity-70"
           />
         </button>
       )}

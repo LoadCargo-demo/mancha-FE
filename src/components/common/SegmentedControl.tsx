@@ -18,7 +18,7 @@ export default function SegmentedControl<T extends string>({
   onChange,
 }: SegmentedControlProps<T>) {
   return (
-    <div className="flex w-full gap-[8px]">
+    <div className="flex flex-wrap gap-[8px]">
       {options.map((option) => {
         const isSelected = option.value === value;
         return (
@@ -26,10 +26,10 @@ export default function SegmentedControl<T extends string>({
             key={option.value}
             type="button"
             onClick={() => onChange(option.value)}
-            className={`flex-1 rounded-[8px] py-[10px] text-[14px] font-semibold transition-colors ${
+            className={`rounded-full border px-[16px] py-[8px] text-[14px] font-medium transition-colors ${
               isSelected
-                ? 'bg-[#191b24] text-[color:var(--color-text-inverse)]'
-                : 'bg-[var(--color-gray-100)] text-[color:var(--color-text-secondary)]'
+                ? 'border-[var(--color-gray-600)] bg-[var(--color-gray-800)] text-[color:var(--color-text-inverse)]'
+                : 'border-[var(--color-gray-200)] bg-[var(--color-white-1000)] text-[color:var(--color-text-primary)]'
             }`}
           >
             {option.label}

@@ -7,15 +7,16 @@
 
   /* Gray (tailwind.config.js gray 스케일 매핑) */
   --color-gray-100: #f3f4f6;
-  --color-gray-200: #f3f4f6;
+  --color-gray-200: #ebebeb;
   --color-gray-300: #d9d9d9;
   --color-gray-400: #afb1b6;
-  --color-gray-600: #657a88;
+  --color-gray-600: #666666;
+  --color-gray-800: #333333;
   --color-gray-900: #000000;
 
   /* Text */
   --color-text-primary: #000000;
-  --color-text-secondary: #657a88;
+  --color-text-secondary: #666666;
   --color-text-inverse: #ffffff;
 
   /* Brand / Action — Figma 원본 색상(#3581FF) 기준.
@@ -27,11 +28,11 @@
   --color-blue-090: #dcebff;
   --color-blue-50: #ebf4ff;
   --color-icon-brand: #3581ff;
-  --color-navy: #194059; /* brand.navy */
+  --color-navy: #131e38; /* brand.navy */
   --color-light-blue: #4c9dd1; /* brand.lightBlue */
 
   /* Point (경고/강조) */
-  --color-point-red: #f34876;
+  --color-point-red: #ba1a1a;
   --color-point-pink: #ffcad9;
   --color-point-bg: #fff2f2;
 

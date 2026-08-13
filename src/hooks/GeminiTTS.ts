@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { apiFetch } from '@/lib/api-client';
+import { useToastStore } from '@/store/useToastStore';
 
 // WAV 헤더 변환 함수 (PCM 데이터를 브라우저에서 재생 가능한 WAV로 변환)
 // — 백엔드로 옮긴 뒤에도 그대로 재사용 (백엔드가 주는 것도 동일한 raw PCM base64)
@@ -53,10 +54,21 @@ async function fetchTTSAudioBase64(
   voiceName: string,
 ): Promise<string | null> {
   try {
-    const res = await apiFetch<{ audio_base64: string }>('/api/voice/tts', {
+    const res = await apiFetch<{
+      audio_base64: string | null;
+      error_message?: string | null;
+    }>('/api/voice/tts', {
       method: 'POST',
       body: { text, voice_name: voiceName },
     });
+
+    // Gemini 쿼터 초과 등 백엔드가 명시적으로 실패를 알려준 경우 — 토스트만 띄우고
+    // 나머지 화면은 정상 동작해야 하므로 에러를 던지지 않고 null만 반환한다.
+    if (res.error_message) {
+      useToastStore.getState().showToast(res.error_message);
+      return null;
+    }
+
     return res.audio_base64;
   } catch (error) {
     console.error('TTS 백엔드 호출 실패:', error);
@@ -66,7 +78,23 @@ async function fetchTTSAudioBase64(
 
 export function GeminiTTS() {
   const [isSpeaking, setIsSpeaking] = useState(false);
+  // 재생 진행률 표시용 (예: "22초 / 30초"). audio 엘리먼트의
+  // timeupdate/loadedmetadata 이벤트로 갱신됩니다.
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // 새로 만든 audio 엘리먼트에 진행률 추적 리스너를 붙인다.
+  const attachProgressListeners = useCallback((audio: HTMLAudioElement) => {
+    const handleLoadedMetadata = () => {
+      // 스트리밍 등으로 duration이 Infinity로 잡히는 경우 방어
+      if (Number.isFinite(audio.duration)) setDuration(audio.duration);
+    };
+    const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
+
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+  }, []);
 
   // 음성 재생 강제 정지
   const stopTTS = useCallback(() => {
@@ -76,6 +104,8 @@ export function GeminiTTS() {
       audioRef.current = null;
     }
     setIsSpeaking(false);
+    setCurrentTime(0);
+    setDuration(0);
   }, []);
 
   // [Pre-fetching] 텍스트를 백엔드에 보내서 음성 URL만 '미리' 만들어 반환
@@ -103,6 +133,7 @@ export function GeminiTTS() {
       try {
         const audio = new Audio(audioSrc);
         audioRef.current = audio;
+        attachProgressListeners(audio);
         audio.onended = () => {
           setIsSpeaking(false);
           URL.revokeObjectURL(audioSrc); // 다 읽으면 메모리 비우기
@@ -116,7 +147,7 @@ export function GeminiTTS() {
         setIsSpeaking(false);
       }
     },
-    [stopTTS],
+    [stopTTS, attachProgressListeners],
   );
 
   // [일반 재생] 텍스트를 받아서 바로 백엔드 호출 후 재생 (기존 방식)
@@ -137,6 +168,7 @@ export function GeminiTTS() {
       const audioSrc = createWavUrl(base64Audio);
       const audio = new Audio(audioSrc);
       audioRef.current = audio;
+      attachProgressListeners(audio);
 
       audio.onended = () => {
         setIsSpeaking(false);
@@ -148,7 +180,7 @@ export function GeminiTTS() {
         setIsSpeaking(false);
       });
     },
-    [stopTTS],
+    [stopTTS, attachProgressListeners],
   );
 
   // 컴포넌트 언마운트 시 오디오 정지 및 메모리 정리
@@ -156,5 +188,13 @@ export function GeminiTTS() {
     return () => stopTTS();
   }, [stopTTS]);
 
-  return { playTTS, stopTTS, preloadTTS, playPreloadedTTS, isSpeaking };
+  return {
+    playTTS,
+    stopTTS,
+    preloadTTS,
+    playPreloadedTTS,
+    isSpeaking,
+    currentTime,
+    duration,
+  };
 }
