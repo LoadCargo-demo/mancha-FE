@@ -106,6 +106,7 @@ function ReportBody({
   summary: RetrospectiveSummaryResponse;
   onRegisterTomorrow: () => void;
 }) {
+  const [note, setNote] = useState('');
   const emptyKmDiff = summary.today_empty_km - summary.last_week_empty_km;
 
   const profitDiff = summary.actual_profit - summary.predicted_profit;
@@ -150,7 +151,7 @@ function ReportBody({
                 />
               </svg>
               <div className="absolute flex flex-col items-center">
-                <span className="text-[15px] text-[color:var(--color-text-secondary)] leading-[18px]">
+                <span className="text-[12px] text-[color:var(--color-text-secondary)] leading-[18px]">
                   오늘 공차
                 </span>
                 <span className="text-[20px] font-bold text-[color:var(--color-action-primary)] leading-[42px]">
@@ -295,6 +296,28 @@ function ReportBody({
                 </span>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* 오늘 운행 한 줄 남기기 — Figma 시안이 아직 없어서 기존 카드 톤에 맞춰 구성.
+            저장 API가 따로 없어서 지금은 로컬 state에만 남아요. 서버에 저장하려면
+            postDailyNote 같은 API가 필요해요. */}
+        <div className="px-[20px]">
+          <div className="bg-white border border-[var(--color-gray-200)] rounded-[12px] p-[16px] flex flex-col gap-[12px]">
+            <h2 className="text-[16px] font-bold text-[color:var(--color-gray-900)]">
+              오늘 운행 한 줄 남기기
+            </h2>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="오늘 하루는 어땠나요?"
+              rows={3}
+              maxLength={200}
+              className="w-full resize-none rounded-[8px] border border-[var(--color-gray-200)] bg-[var(--color-gray-100)] p-[12px] text-[14px] text-[color:var(--color-gray-900)] placeholder:text-[color:var(--color-text-secondary)] focus:outline-none focus:border-[var(--color-action-primary)]"
+            />
+            <span className="self-end text-[11px] text-[color:var(--color-gray-400)]">
+              {note.length}/200
+            </span>
           </div>
         </div>
       </div>
