@@ -8,7 +8,10 @@ import OfferCompleteStep from './pages/offer/OfferCompleteStep';
 import OfferSummaryPage from './pages/offer/OfferSummaryPage';
 import AgentStatusPage from './pages/status/AgentStatusPage';
 import NegotiationCandiatePage from './pages/status/NegotiationCandiatePage';
-
+import NegotiationCallScreen from './pages/negotiation/NegotiationCallScreen';
+import NegotiationEvidencePage from './pages/negotiation/NegotiationEvidencePage';
+import NegotiationComparePage from './pages/negotiation/NegotiationComparePage';
+import NegotiationResultPage from './pages/negotiation/NegotiationResultPage';
 import HomePage from '@/pages/home/HomePage';
 export default function App() {
   return (
@@ -31,6 +34,23 @@ export default function App() {
           element={<NegotiationCandiatePage />}
         />
         <Route path={ROUTES.negotiation} element={<AgentStatusPage />} />
+
+        <Route
+          path={ROUTES.negotiationCall}
+          element={<NegotiationCallScreen />}
+        />
+        <Route
+          path={ROUTES.negotiationEvidence}
+          element={<NegotiationEvidencePage />}
+        />
+        <Route
+          path={ROUTES.negotiationCompare}
+          element={<NegotiationComparePage />}
+        />
+        <Route
+          path={ROUTES.negotiationResult}
+          element={<NegotiationResultPage />}
+        />
       </Routes>
     </BrowserRouter>
   );

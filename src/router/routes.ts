@@ -7,6 +7,10 @@ export const ROUTES = {
   offerNewSchedule: '/offer/new/schedule',
   offerNewConditions: '/offer/new/conditions',
   offerNewComplete: '/offer/new/complete',
+  negotiationCall: '/negotiation/call',
+  negotiationEvidence: '/negotiation/evidence',
+  negotiationCompare: '/negotiation/compare',
+  negotiationResult: '/negotiation/result',
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;
