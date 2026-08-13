@@ -3,11 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Add from '@iconify-react/material-symbols-light/add';
+import Check from '@iconify-react/material-symbols-light/check';
 
 import OfferStepHeader from '../../components/offer/OfferStepHeader';
 import SettingRow from '../../components/offer/SettingRow';
 import SegmentedControl from '../../components/common/SegmentedControl';
 import Chip from '../../components/common/Chip';
+import BottomSheet from '../../components/common/BottomSheet.tsx';
 import BottomCTA from '../../components/common/BottomCTA';
 import { ROUTES } from '../../router/routes';
 import { getRegistrationPrefill } from '@/api/offer/registration';
@@ -21,6 +23,11 @@ const STRICTNESS_OPTIONS: { value: ScheduleStrictness; label: string }[] = [
   { value: 'moderate', label: '웬만하면' },
   { value: 'flexible', label: '유연하게' },
 ];
+
+// 연속 운행 한도 선택지: 2~6시간
+const CONTINUOUS_DRIVE_OPTIONS_MIN = [120, 180, 240, 300, 360];
+// 1일 총 운행 한도 선택지: 6~12시간
+const DAILY_DRIVE_OPTIONS_MIN = [360, 420, 480, 540, 600, 660, 720];
 
 function minutesToHourLabel(min: number): string {
   if (min % 60 === 0) return `${min / 60}시간`;
@@ -38,17 +45,16 @@ export default function OfferScheduleStep() {
   const [isLoading, setIsLoading] = useState(!constraints);
   const [homeHour, setHomeHour] = useState(20);
   const [strictness, setStrictness] = useState<ScheduleStrictness>('strict');
+  const [openSheet, setOpenSheet] = useState<'continuous' | 'daily' | null>(
+    null,
+  );
   const [fixedSchedules, setFixedSchedules] = useState<string[]>([
     '수 19:00 병원(허리)',
     '주말 휴무',
   ]);
 
   useEffect(() => {
-    // constraints를 deps에 넣으면 이 effect가 스스로 발생시킨 상태 변경 때문에
-    // 즉시 재실행→취소되어 setIsLoading(false)가 무시된다. 마운트 시 1회만 실행하고,
-    // 이미 로드된 상태인지는 getState()로 그때그때 확인한다.
     if (useOfferDraftStore.getState().constraints) {
-      setIsLoading(false);
       return;
     }
     let cancelled = false;
@@ -89,25 +95,32 @@ export default function OfferScheduleStep() {
         subtitle="AI는 기사님의 일정을 반영하여 하루를 계획합니다."
       />
 
-      <div className="flex flex-1 flex-col gap-[24px] px-[var(--spacing-screen)]">
-        <div className="flex flex-col gap-[8px]">
-          <div className="flex items-center justify-between">
-            <span className="text-[14px] text-[color:var(--color-text-secondary)]">
-              귀가 희망 시간
-            </span>
-            <span className="text-[15px] font-semibold text-[color:var(--color-text-primary)]">
+      <div className="flex flex-1 flex-col gap-[16px] px-[var(--spacing-screen)]">
+        <div className="flex flex-col gap-[16px] rounded-[12px] border border-[var(--color-gray-200)] bg-[var(--color-white-1000)] p-[16px]">
+          <span className="text-[16px] font-medium text-[color:var(--color-text-secondary)]">
+            귀가 희망 시간
+          </span>
+          <div className="flex items-center gap-[16px]">
+            <div className="relative h-[10px] flex-1">
+              <div className="absolute inset-0 rounded-full bg-[var(--color-gray-200)]" />
+              <div
+                className="absolute inset-y-0 left-0 rounded-full bg-[var(--color-action-primary)]"
+                style={{ width: `${((homeHour - 16) / (24 - 16)) * 100}%` }}
+              />
+              <input
+                type="range"
+                min={16}
+                max={24}
+                step={1}
+                value={homeHour}
+                onChange={(e) => setHomeHour(Number(e.target.value))}
+                className="absolute inset-0 h-[10px] w-full cursor-pointer appearance-none opacity-0"
+              />
+            </div>
+            <span className="w-[48px] shrink-0 text-right text-[18px] font-bold text-[color:var(--color-text-primary)]">
               {homeHour}:00
             </span>
           </div>
-          <input
-            type="range"
-            min={16}
-            max={24}
-            step={1}
-            value={homeHour}
-            onChange={(e) => setHomeHour(Number(e.target.value))}
-            className="h-[6px] w-full appearance-none rounded-full bg-[var(--color-gray-200)] accent-[#3581ff]"
-          />
           <SegmentedControl
             options={STRICTNESS_OPTIONS}
             value={strictness}
@@ -115,64 +128,60 @@ export default function OfferScheduleStep() {
           />
         </div>
 
-        <div className="flex flex-col">
-          <p className="pb-[8px] text-[13px] font-semibold text-[color:var(--color-text-secondary)]">
-            운행 안전 기준
-          </p>
-          <SettingRow
-            label="연속 운행 한도"
-            value={
-              isLoading || !constraints
-                ? '불러오는 중...'
-                : minutesToHourLabel(constraints.max_continuous_drive_min)
-            }
-            hasDropdown
-            onClick={() =>
-              constraints &&
-              updateConstraints({
-                max_continuous_drive_min:
-                  constraints.max_continuous_drive_min === 240 ? 180 : 240,
-              })
-            }
-          />
-          <SettingRow
-            label="1일 총 운행 한도"
-            value={
-              isLoading || !constraints
-                ? '불러오는 중...'
-                : minutesToHourLabel(constraints.max_daily_drive_min)
-            }
-            hasDropdown
-            onClick={() =>
-              constraints &&
-              updateConstraints({
-                max_daily_drive_min:
-                  constraints.max_daily_drive_min === 600 ? 540 : 600,
-              })
-            }
-          />
+        <div className="flex flex-col rounded-[12px] border border-[var(--color-gray-200)] bg-[var(--color-white-1000)]">
+          <div className="flex flex-col gap-[16px] border-b border-[var(--color-gray-200)] p-[16px]">
+            <p className="text-[16px] font-medium text-[color:var(--color-text-secondary)]">
+              운행 안전 기준
+            </p>
+            <SettingRow
+              variant="plain"
+              label="연속 운행 한도"
+              value={
+                isLoading || !constraints
+                  ? '불러오는 중...'
+                  : minutesToHourLabel(constraints.max_continuous_drive_min)
+              }
+              hasDropdown
+              onClick={() => setOpenSheet('continuous')}
+            />
+          </div>
+          <div className="p-[16px]">
+            <SettingRow
+              variant="plain"
+              label="1일 총 운행 한도"
+              value={
+                isLoading || !constraints
+                  ? '불러오는 중...'
+                  : minutesToHourLabel(constraints.max_daily_drive_min)
+              }
+              hasDropdown
+              onClick={() => setOpenSheet('daily')}
+            />
+          </div>
         </div>
 
         <div className="flex flex-col gap-[8px]">
-          <p className="text-[13px] font-semibold text-[color:var(--color-text-secondary)]">
-            고정 일정 (시뮬레이터가 피해감)
-          </p>
-          <div className="flex flex-wrap gap-[8px]">
-            {fixedSchedules.map((schedule) => (
-              <Chip
-                key={schedule}
-                label={schedule}
-                onRemove={() => removeSchedule(schedule)}
-              />
-            ))}
-            <button
-              type="button"
-              onClick={addSchedule}
-              className="flex items-center gap-[2px] rounded-full border border-dashed border-[var(--color-gray-300)] py-[8px] pl-[8px] pr-[12px] text-[13px] font-medium text-[color:var(--color-text-secondary)]"
-            >
-              <Add width="16" height="16" />
-              추가
-            </button>
+          <div className="rounded-[12px] border border-[var(--color-gray-200)] bg-[var(--color-white-1000)] p-[16px]">
+            <p className="text-[13px] font-semibold pb-4 text-[color:var(--color-text-secondary)]">
+              고정 일정 (시뮬레이터가 피해감)
+            </p>
+            <div className="flex flex-wrap gap-[8px]">
+              {fixedSchedules.map((schedule) => (
+                <Chip
+                  key={schedule}
+                  label={schedule}
+                  onRemove={() => removeSchedule(schedule)}
+                />
+              ))}
+              <button
+                type="button"
+                onClick={addSchedule}
+                className="flex items-center gap-[2px] rounded-full border border-dashed border-[var(--color-gray-300)] py-[8px] pl-[8px] pr-[12px] text-[13px] font-medium text-[color:var(--color-text-secondary)]"
+              >
+                <Add width="16" height="16" />
+                추가
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -182,6 +191,74 @@ export default function OfferScheduleStep() {
         enabled={!isLoading}
         onPrimaryClick={() => navigate(ROUTES.offerNewConditions)}
       />
+
+      <BottomSheet
+        isOpen={openSheet === 'continuous'}
+        onClose={() => setOpenSheet(null)}
+        title="연속 운행 한도"
+      >
+        <div className="flex flex-col">
+          {CONTINUOUS_DRIVE_OPTIONS_MIN.map((min) => {
+            const isSelected = constraints?.max_continuous_drive_min === min;
+            return (
+              <button
+                key={min}
+                type="button"
+                onClick={() => {
+                  updateConstraints({ max_continuous_drive_min: min });
+                  setOpenSheet(null);
+                }}
+                className="flex items-center justify-between border-b border-[var(--color-gray-100)] py-[14px] text-left last:border-b-0"
+              >
+                <span className="text-[16px] text-[color:var(--color-text-primary)]">
+                  {minutesToHourLabel(min)}
+                </span>
+                {isSelected && (
+                  <Check
+                    width="20"
+                    height="20"
+                    className="text-[color:var(--color-action-primary)]"
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </BottomSheet>
+
+      <BottomSheet
+        isOpen={openSheet === 'daily'}
+        onClose={() => setOpenSheet(null)}
+        title="1일 총 운행 한도"
+      >
+        <div className="flex flex-col">
+          {DAILY_DRIVE_OPTIONS_MIN.map((min) => {
+            const isSelected = constraints?.max_daily_drive_min === min;
+            return (
+              <button
+                key={min}
+                type="button"
+                onClick={() => {
+                  updateConstraints({ max_daily_drive_min: min });
+                  setOpenSheet(null);
+                }}
+                className="flex items-center justify-between border-b border-[var(--color-gray-100)] py-[14px] text-left last:border-b-0"
+              >
+                <span className="text-[16px] text-[color:var(--color-text-primary)]">
+                  {minutesToHourLabel(min)}
+                </span>
+                {isSelected && (
+                  <Check
+                    width="20"
+                    height="20"
+                    className="text-[color:var(--color-action-primary)]"
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </BottomSheet>
     </div>
   );
 }
