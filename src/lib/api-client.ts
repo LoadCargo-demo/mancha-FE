@@ -3,7 +3,19 @@
 const BASE_URL = import.meta.env.PROD
   ? ''
   : (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000');
-const DEMO_DRIVER_ID = import.meta.env.VITE_DEMO_DRIVER_ID ?? 'driver_kimmansu';
+
+function resolveDriverId(): string {
+  const override = import.meta.env.VITE_DEMO_DRIVER_ID;
+  if (override) return override;
+
+  const key = 'mancha_driver_id';
+  let id = sessionStorage.getItem(key);
+  if (!id) {
+    id = crypto.randomUUID();
+    sessionStorage.setItem(key, id);
+  }
+  return id;
+}
 
 export class ApiError extends Error {
   status: number;
@@ -25,7 +37,7 @@ type ApiFetchOptions = Omit<RequestInit, 'body'> & {
 function withDriverId(path: string, skip?: boolean): string {
   if (skip) return path;
   const separator = path.includes('?') ? '&' : '?';
-  return `${path}${separator}driver_id=${encodeURIComponent(DEMO_DRIVER_ID)}`;
+  return `${path}${separator}driver_id=${encodeURIComponent(resolveDriverId())}`;
 }
 
 export async function apiFetch<T>(
