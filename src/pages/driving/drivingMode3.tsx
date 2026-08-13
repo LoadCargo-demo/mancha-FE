@@ -2,7 +2,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { X, TriangleAlert } from 'lucide-react';
-import BarChart from '@iconify-react/material-symbols-light/bar-chart';
 
 import SystemStatusBar from '../../components/common/SystemStatusBar';
 import { ROUTES } from '../../router/routes';
@@ -20,11 +19,6 @@ type LocationState = {
   originalPackage: Package | null;
   audioUrl?: string | null;
 };
-
-function formatWon(n: number): string {
-  const sign = n > 0 ? '+' : n < 0 ? '-' : '';
-  return `${sign}${Math.abs(n).toLocaleString()}원`;
-}
 
 export default function DrivingMode3Page() {
   const { playPreloadedTTS, isSpeaking, playTTS } = GeminiTTS();
@@ -120,7 +114,7 @@ export default function DrivingMode3Page() {
             </div>
             <div className="flex items-center gap-[8px]">
               <span className="text-[14px] text-[#8d9bb2] leading-[21px]">
-                새로운 최적 경로를 계산했습니다
+                이대로면 복귀 {originalPackage?.return_time ?? '-'}
               </span>
               <span
                 className="text-[12px] font-semibold text-[#8d9bb2] rounded-[8px] px-[8px] py-[4px]"
@@ -142,18 +136,30 @@ export default function DrivingMode3Page() {
               리빌더 에이전트
             </p>
             <div className="w-[236px] py-[20px] flex flex-col items-center">
-              <p className="text-[18px] font-bold text-center leading-[1.45] text-[#f7fbff]">
+              <p className="text-[20px] font-bold text-center leading-[1.45] text-[#f7fbff]">
                 {tradeoff_text}
               </p>
             </div>
-            <div className="flex items-center justify-center py-[8px]">
-              <BarChart
-                width="28"
-                height="28"
-                className={`text-[color:var(--color-action-primary)] ${
-                  isSpeaking ? 'animate-pulse' : 'opacity-40'
-                }`}
-              />
+            <style>{`
+              @keyframes eq-bounce {
+                0%, 100% { transform: scaleY(0.4); }
+                50% { transform: scaleY(1); }
+              }
+            `}</style>
+            <div className="flex items-center justify-center gap-[4px] h-[24px] pt-[4px]">
+              {[8, 16, 24, 16, 8].map((h, i) => (
+                <div
+                  key={i}
+                  className="w-[4px] origin-center rounded-full bg-[var(--color-blue-500,#3581ff)]"
+                  style={{
+                    height: `${h}px`,
+                    animation: isSpeaking
+                      ? `eq-bounce ${0.6 + (i % 3) * 0.15}s ease-in-out ${i * 0.08}s infinite`
+                      : 'none',
+                    opacity: isSpeaking ? 1 : 0.4,
+                  }}
+                />
+              ))}
             </div>
           </div>
         </div>
@@ -167,21 +173,21 @@ export default function DrivingMode3Page() {
             <div className="flex items-center justify-between border-b border-[#ebebeb]/20 pb-[9px]">
               <div className="flex-1 flex flex-col gap-[4px] border-r border-[#ebebeb]/20 pr-[16px]">
                 <span className="text-[14px] text-[#8d9bb2] leading-[21px]">
-                  교체 시 복귀
+                  유지 시
+                </span>
+                <span className="text-[18px] font-bold text-[#8d9bb2] leading-[27px]">
+                  복귀 {originalPackage?.return_time ?? '-'}
+                </span>
+              </div>
+              <div className="flex-1 flex flex-col gap-[4px] pl-[16px]">
+                <span className="text-[14px] text-[#8d9bb2] leading-[21px]">
+                  교체 시
                 </span>
                 <span
                   className="text-[18px] font-bold leading-[27px]"
                   style={{ color: KAKAO_YELLOW }}
                 >
-                  {new_package.return_time}
-                </span>
-              </div>
-              <div className="flex-1 flex flex-col gap-[4px] pl-[16px]">
-                <span className="text-[14px] text-[#8d9bb2] leading-[21px]">
-                  수익 변화
-                </span>
-                <span className="text-[18px] font-bold text-[#8d9bb2] leading-[27px]">
-                  {formatWon(diff.profit_diff)}
+                  복귀 {new_package.return_time}
                 </span>
               </div>
             </div>

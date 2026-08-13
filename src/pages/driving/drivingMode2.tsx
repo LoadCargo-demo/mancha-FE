@@ -37,7 +37,14 @@ import mapBackground from '@/assets/illustrations/map.png';
 // TODO: 실제 서비스에서는 실시간 지연 감지(WebSocket 등)로 트리거하세요.
 // 데모 목적으로 화면 진입 일정 시간 후 지연 이벤트를 시뮬레이션합니다.
 const DEMO_DELAY_TRIGGER_MS = 4000;
-const DEMO_DELAY_MIN = 40;
+
+/** 상차지에 따라 데모용 지연 시간을 다르게 준다 — 김해는 40분, 양산은 60분,
+ * 그 외 지역은 일단 양산 기준(60분)을 기본값으로 쓴다. */
+function resolveDemoDelayMin(location: string): number {
+  if (location.includes('김해')) return 40;
+  if (location.includes('양산')) return 60;
+  return 60;
+}
 
 function DelayAlertCard({
   delayLabel,
@@ -87,6 +94,7 @@ export default function DrivingMode2Page() {
     null,
   );
   const [delayedLabel, setDelayedLabel] = useState('');
+  const [delayMinutes, setDelayMinutes] = useState(0);
   const [originalPackage, setOriginalPackage] = useState<Package | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isSheetExpanded, setIsSheetExpanded] = useState(true); // 바텀시트 접힘/펼침
@@ -136,11 +144,12 @@ export default function DrivingMode2Page() {
           (b) => b.order_id === targetOrderId && b.action === '상차',
         );
         const label = targetBlock?.location ?? targetOrderId;
+        const delayMin = resolveDemoDelayMin(label);
 
         const res = await submitDrivingEvent({
           event_type: 'DELAY',
           order_id: targetOrderId,
-          delay_min: DEMO_DELAY_MIN,
+          delay_min: delayMin,
           detail: `${label} 상차 지연`,
         });
 
@@ -148,6 +157,7 @@ export default function DrivingMode2Page() {
 
         if (res.should_notify && res.new_package) {
           setDelayedLabel(label);
+          setDelayMinutes(delayMin);
           setEventResult(res);
 
           // 팝업 뜨자마자(=유저가 "제안 보기" 누르기 전) 미리 TTS 오디오를 만들어둔다.
@@ -188,13 +198,13 @@ export default function DrivingMode2Page() {
       {/* 상단 지연 알림 팝업 — 실제 API 응답을 받은 뒤에만 표시 */}
       {eventResult && (
         <DelayAlertCard
-          delayLabel={`${delayedLabel} 상차 ${DEMO_DELAY_MIN}분 지연`}
+          delayLabel={`${delayedLabel} 상차 ${delayMinutes}분 지연`}
           onViewSuggestion={() =>
             navigate(ROUTES.drivingMode3, {
               state: {
                 eventResult,
                 delayedOrderLabel: delayedLabel,
-                delayMin: DEMO_DELAY_MIN,
+                delayMin: delayMinutes,
                 originalPackage,
                 audioUrl, // 아직 준비 안 됐으면 null → 주행중3이 케이스 B로 직접 재생 호출
               },
@@ -220,7 +230,7 @@ export default function DrivingMode2Page() {
             backgroundImage: 'linear-gradient(64deg, #0075FF 0%, #0047B3 100%)',
           }}
         >
-          <div className="size-[56px] rounded-3xl outline outline-4 -outline-offset-4 outline-white flex items-center justify-center shrink-0">
+          <div className="size-[56px] rounded-full outline outline-4 -outline-offset-4 outline-white flex items-center justify-center shrink-0">
             <span className="text-[18px] font-bold text-white">출발</span>
           </div>
           <div className="flex flex-col">
@@ -371,7 +381,7 @@ export default function DrivingMode2Page() {
                 <div className="w-[16%] bg-blue-600" />
                 <div className="w-[7%] bg-orange-500" />
                 <div className="w-[14%] bg-blue-600" />
-                <div className="w-[14%] bg-red-500" />
+                <div className="w-[29%] bg-red-500" />
               </div>
             </div>
 
