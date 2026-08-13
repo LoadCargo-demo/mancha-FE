@@ -57,25 +57,29 @@ export default function NegotiationEvidencePage() {
   }, []);
 
   const recommended = ranked?.find((r) => r.evaluation.package.is_recommended);
-  const alternative = ranked?.find((r) => !r.evaluation.package.is_recommended);
+  const alternatives =
+    ranked?.filter((r) => !r.evaluation.package.is_recommended) ?? [];
+  // 추천 결론 배너에 쓸 비교 대상 — ranked 배열이 이미 순위순으로 정렬돼 있다는
+  // 전제하에, 대안 중 1순위(= 추천 다음으로 근접한 패키지)를 기준으로 문구를 만든다.
+  const headlineAlternative = alternatives[0];
   const maxNominal = Math.max(
     recommended?.evaluation.package.nominal_profit ?? 0,
-    alternative?.evaluation.package.nominal_profit ?? 0,
+    ...alternatives.map((a) => a.evaluation.package.nominal_profit),
     1,
   );
 
   const profitGap =
-    recommended && alternative
+    recommended && headlineAlternative
       ? recommended.evaluation.adjusted_profit -
-        alternative.evaluation.adjusted_profit
+        headlineAlternative.evaluation.adjusted_profit
       : 0;
   // 대안이 정책상 하드 위반으로 자동 제외된 경우("최대수익형인데 수작업 포함" 같은 케이스)엔
   // 실수익이 대안보다 낮아도(음수 gap) "더 남아요"라고 주장하면 말이 안 되므로 문구를 분기한다.
   const alternativeExcludedReason =
-    alternative?.evaluation.package.excluded_reason ?? null;
+    headlineAlternative?.evaluation.package.excluded_reason ?? null;
 
   return (
-    <div className="flex h-dvh mx-auto w-full max-w-[390px] flex-col bg-[var(--color-white-1000)]">
+    <div className="flex h-[100dvh] mx-auto w-full max-w-[390px] flex-col bg-[var(--color-white-1000)]">
       <SystemStatusBar />
       <Navigation
         title="보정 내역"
@@ -84,7 +88,7 @@ export default function NegotiationEvidencePage() {
         onBack={() => navigate(-1)}
       />
 
-      <div className="flex flex-1 flex-col gap-[16px] px-[var(--spacing-screen)] pt-[8px]">
+      <div className="no-scrollbar flex min-h-0 flex-1 flex-col gap-[16px] overflow-y-auto px-[var(--spacing-screen)] pt-[16px]">
         {error && (
           <p className="text-[13px] text-[color:var(--color-point-red)]">
             {error}
@@ -97,7 +101,7 @@ export default function NegotiationEvidencePage() {
           </p>
         )}
 
-        {recommended && alternative && (
+        {recommended && headlineAlternative && (
           <>
             <div className="flex flex-col gap-[8px] rounded-[12px] bg-[var(--color-navy)] p-[16px]">
               <span className="text-[13px] font-semibold text-[color:var(--color-light-blue)]">
@@ -106,7 +110,8 @@ export default function NegotiationEvidencePage() {
               {alternativeExcludedReason ? (
                 <>
                   <p className="text-[18px] font-bold text-[color:var(--color-text-inverse)]">
-                    {alternative.ordinal}은 조건 위반으로 자동 제외됐어요
+                    {headlineAlternative.ordinal}은 조건 위반으로 자동
+                    제외됐어요
                   </p>
                   <p className="text-[13px] leading-[1.5] text-[color:rgba(255,255,255,0.7)]">
                     {alternativeExcludedReason}
@@ -119,8 +124,8 @@ export default function NegotiationEvidencePage() {
                     {profitGap.toLocaleString()}원 더 남아요
                   </p>
                   <p className="text-[13px] leading-[1.5] text-[color:rgba(255,255,255,0.7)]">
-                    받는 돈은 {alternative.ordinal}이 높지만, 대기시간과 공차
-                    비용을 빼면 순위가 바뀝니다.
+                    받는 돈은 {headlineAlternative.ordinal}이 높지만, 대기시간과
+                    공차 비용을 빼면 순위가 바뀝니다.
                   </p>
                 </>
               ) : (
@@ -155,44 +160,47 @@ export default function NegotiationEvidencePage() {
               }
             />
 
-            <ComparisonBarCard
-              rankLabel={alternative.ordinal}
-              typeName={alternative.evaluation.package.label}
-              nominalValue={alternative.evaluation.package.nominal_profit.toLocaleString()}
-              nominalBarPercent={
-                (alternative.evaluation.package.nominal_profit / maxNominal) *
-                100
-              }
-              netValue={alternative.evaluation.adjusted_profit.toLocaleString()}
-              netBarPercent={
-                (alternative.evaluation.adjusted_profit / maxNominal) * 100
-              }
-              netValueTone={
-                alternative.evaluation.package.excluded_reason
-                  ? 'negative'
-                  : 'positive'
-              }
-              note={
-                alternative.evaluation.package.excluded_reason ??
-                `공차 ${alternative.evaluation.package.empty_km.toFixed(1)}km · 제약 위반 없음`
-              }
-              noteTone={
-                alternative.evaluation.package.excluded_reason
-                  ? 'negative'
-                  : 'positive'
-              }
-            />
+            {alternatives.map((alternative) => (
+              <ComparisonBarCard
+                key={alternative.ordinal}
+                rankLabel={alternative.ordinal}
+                typeName={alternative.evaluation.package.label}
+                nominalValue={alternative.evaluation.package.nominal_profit.toLocaleString()}
+                nominalBarPercent={
+                  (alternative.evaluation.package.nominal_profit / maxNominal) *
+                  100
+                }
+                netValue={alternative.evaluation.adjusted_profit.toLocaleString()}
+                netBarPercent={
+                  (alternative.evaluation.adjusted_profit / maxNominal) * 100
+                }
+                netValueTone={
+                  alternative.evaluation.package.excluded_reason
+                    ? 'negative'
+                    : 'positive'
+                }
+                note={
+                  alternative.evaluation.package.excluded_reason ??
+                  `공차 ${alternative.evaluation.package.empty_km.toFixed(1)}km · 제약 위반 없음`
+                }
+                noteTone={
+                  alternative.evaluation.package.excluded_reason
+                    ? 'negative'
+                    : 'positive'
+                }
+              />
+            ))}
 
-            <div className="flex flex-col gap-[8px] rounded-[12px] bg-[var(--color-gray-100)] p-[16px]">
-              <div className="flex items-center gap-[8px]">
-                <p className="text-[13px] font-semibold text-[color:var(--color-text-secondary)]">
+            <div className="flex flex-col gap-[8px] rounded-[12px] border border-[var(--color-gray-200)] bg-[var(--color-gray-100)] p-[16px]">
+              <div className="flex items-center gap-[4px]">
+                <p className="text-[14px] font-medium text-[color:var(--color-text-secondary)]">
                   이 판단에 쓰인 데이터
                 </p>
-                <span className="rounded-full bg-[var(--color-white-1000)] px-[8px] py-[2px] text-[11px] font-semibold text-[color:var(--color-text-secondary)]">
+                <span className="rounded-[2px] bg-[var(--color-gray-400)] px-[8px] py-[2px] text-[12px] font-semibold text-[color:var(--color-text-inverse)]">
                   근거 추적
                 </span>
               </div>
-              <div className="flex flex-col gap-[8px]">
+              <div className="flex flex-wrap gap-[6px]">
                 {recommended.evaluation.deductions.map((deduction) => (
                   <DataChip
                     key={deduction.label}
@@ -209,8 +217,8 @@ export default function NegotiationEvidencePage() {
       <BottomCTA
         type="Split"
         confirmLabel={`${recommended?.ordinal ?? ''}으로 확정`}
-        onSecondaryClick={() => navigate(-1)}
-        onPrimaryClick={() => navigate(ROUTES.negotiationCompare)}
+        onSecondaryClick={() => navigate(ROUTES.negotiationCompare)}
+        onPrimaryClick={() => navigate(ROUTES.negotiationResult)}
       />
     </div>
   );

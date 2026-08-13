@@ -7,12 +7,12 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Close from '@iconify-react/material-symbols-light/close';
-import CheckBoxOutlineBlank from '@iconify-react/material-symbols-light/check-box-outline-blank';
 
 import Navigation from '../../components/common/Navigation';
 import BottomCTA from '../../components/common/BottomCTA';
 import DataChip from '../../components/negotiation/DataChip';
 import Database from '@iconify-react/material-symbols-light/database';
+import ChatBubbleOutline from '@iconify-react/material-symbols-light/chat-bubble-outline';
 import MarkdownLite from '../../components/negotiation/MarkdownLite';
 import { ROUTES } from '../../router/routes';
 import { askQuestion } from '@/api/negotiation/qna';
@@ -36,7 +36,10 @@ export default function NegotiationResultPage() {
   const packageLabel = recommendedPackageId?.replace(/^pkg_/, '') ?? '추천안';
 
   const state = location.state as LocationState | null;
-  const displayedQuestion = state?.heardText?.trim() || FALLBACK_QUESTION;
+  const initialQuestion = state?.heardText?.trim() || FALLBACK_QUESTION;
+  // 팔로업 질문을 탭하면 이 값을 바꿔서 재조회한다. null이면 초기 질문(STT 인식/폴백) 사용.
+  const [activeQuestion, setActiveQuestion] = useState<string | null>(null);
+  const displayedQuestion = activeQuestion ?? initialQuestion;
 
   const [answer, setAnswer] = useState<QnaResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,7 +64,6 @@ export default function NegotiationResultPage() {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [displayedQuestion]);
 
   return (
@@ -76,19 +78,19 @@ export default function NegotiationResultPage() {
 
       <div className="flex flex-1 flex-col gap-[16px] px-[var(--spacing-screen)] pt-[8px]">
         <div className="flex justify-end">
-          <div className="rounded-[12px] rounded-tr-none bg-[var(--color-gray-100)] px-[14px] py-[10px]">
-            <p className="text-[14px] text-[color:var(--color-text-primary)]">
-              "{displayedQuestion}"
+          <div className="max-w-[296px] rounded-[12px] rounded-tr-[2px] border border-[var(--color-gray-300)] bg-[var(--color-gray-200)] p-[17px] shadow-[0px_1px_1px_0px_rgba(0,0,0,0.05)]">
+            <p className="text-right text-[16px] font-semibold text-[color:var(--color-text-primary)]">
+              {displayedQuestion}
             </p>
           </div>
         </div>
 
-        <div className="flex flex-col gap-[10px] rounded-[12px] bg-[var(--color-blue-50)] p-[16px]">
-          <div className="flex items-center gap-[8px]">
-            <span className="text-[13px] font-semibold text-[color:var(--color-text-secondary)]">
+        <div className="flex flex-col gap-[8px] rounded-[12px] border border-[var(--color-gray-200)] bg-[var(--color-white-1000)] p-[17px] shadow-[0px_1px_1px_0px_rgba(0,0,0,0.05)]">
+          <div className="flex items-center gap-[4px]">
+            <span className="text-[12px] font-semibold tracking-[0.48px] text-[color:var(--color-text-secondary)]">
               만차 에이전트
             </span>
-            <span className="rounded-full bg-[var(--color-action-primary)] px-[8px] py-[2px] text-[11px] font-bold text-[color:var(--color-text-inverse)]">
+            <span className="rounded-[12px] bg-[var(--color-action-primary)] px-[8px] py-[4px] text-[12px] font-semibold tracking-[0.48px] text-[color:var(--color-blue-surface-soft,#f5faff)]">
               RAG 응답
             </span>
           </div>
@@ -104,6 +106,18 @@ export default function NegotiationResultPage() {
             </p>
           )}
           {answer && <MarkdownLite text={answer.answer} />}
+
+          {answer && (
+            <div className="flex h-[24px] w-full items-end justify-end gap-[4px] pt-[8px]">
+              {[9.6, 16.8, 24, 14.4, 7.2].map((h, i) => (
+                <div
+                  key={i}
+                  className="w-[6px] rounded-[12px] bg-[var(--color-action-primary)]"
+                  style={{ height: `${h}px` }}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {answer && answer.sources.length > 0 && (
@@ -122,37 +136,41 @@ export default function NegotiationResultPage() {
         )}
 
         {answer && answer.follow_up_questions.length > 0 && (
-          <div className="flex flex-col gap-[8px]">
+          <div className="flex flex-col gap-[16px] rounded-[12px] border border-dashed border-[var(--color-gray-300)] bg-[var(--color-white-1000)] p-[17px]">
             <div className="flex items-center gap-[8px]">
-              <p className="text-[13px] font-semibold text-[color:var(--color-text-secondary)]">
+              <p className="text-[12px] font-semibold tracking-[0.48px] text-[color:var(--color-text-secondary)]">
                 이어서 물어볼 수 있는 것
               </p>
-              <span className="rounded-full bg-[var(--color-gray-100)] px-[8px] py-[2px] text-[11px] font-semibold text-[color:var(--color-text-secondary)]">
+              <span className="rounded-[12px] bg-[var(--color-gray-200)] px-[8px] py-[2px] text-[12px] font-semibold tracking-[0.48px] text-[color:var(--color-text-secondary)]">
                 AI 제안
               </span>
             </div>
-            {answer.follow_up_questions.map((question) => (
-              <div
-                key={question}
-                className="flex items-center gap-[8px] py-[4px]"
-              >
-                <CheckBoxOutlineBlank
-                  width="18"
-                  height="18"
-                  className="shrink-0 text-[color:var(--color-gray-400)]"
-                />
-                <span className="text-[14px] text-[color:var(--color-text-primary)]">
-                  {question}
-                </span>
-              </div>
-            ))}
+            <div className="flex flex-col gap-[12px]">
+              {answer.follow_up_questions.map((question) => (
+                <button
+                  key={question}
+                  type="button"
+                  onClick={() => setActiveQuestion(question)}
+                  className="flex items-center gap-[8px] text-left"
+                >
+                  <ChatBubbleOutline
+                    width="14"
+                    height="14"
+                    className="shrink-0 text-[color:var(--color-text-secondary)]"
+                  />
+                  <span className="text-[14px] text-[color:var(--color-text-primary)]">
+                    {question}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
 
       <BottomCTA
         type="VoiceConfirm"
-        confirmLabel={`${packageLabel}으로 확정`}
+        confirmLabel={`${packageLabel} 확정`}
         onPrimaryClick={() => navigate(ROUTES.offer)}
       />
     </div>
