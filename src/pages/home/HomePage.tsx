@@ -168,7 +168,11 @@ export default function HomePage() {
     <div className="flex flex-col bg-white min-h-full">
       {/* 상단 헤더: 로고 + 글자크기 토글 + 알림 */}
       <div className="px-[20px] pb-[16px] flex items-center justify-between">
-        <img src={logo} alt="만차" className="h-9 w-auto object-contain" />
+        <img
+          src={logo}
+          alt="만차"
+          className="h-12 w-12 object-contain translate-x-[4px]"
+        />
 
         <div className="flex items-center gap-[12px]">
           <div className="bg-[var(--color-gray-100)] rounded-full p-[4px] flex items-center">
