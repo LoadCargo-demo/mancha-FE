@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useToastStore } from '../../store/ToastStore';
+import { useToastStore } from '../../store/useToastStore';
 
 const AUTO_DISMISS_MS = 3500;
 
