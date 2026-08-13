@@ -1,0 +1,49 @@
+:root {
+  /* Base */
+  --color-white-1000: #ffffff;
+  --color-black-900: #000000;
+  --color-black-alpha-5: rgba(0, 0, 0, 0.05);
+  --color-black-alpha-8: rgba(0, 0, 0, 0.08);
+
+  /* Gray (tailwind.config.js gray 스케일 매핑) */
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #f3f4f6;
+  --color-gray-300: #d9d9d9;
+  --color-gray-400: #afb1b6;
+  --color-gray-600: #657a88;
+  --color-gray-900: #000000;
+
+  /* Text */
+  --color-text-primary: #000000;
+  --color-text-secondary: #657a88;
+  --color-text-inverse: #ffffff;
+
+  /* Brand / Action — Figma 원본 색상(#3581FF) 기준.
+     회사 tailwind.config.js의 brand.blue(#1E56AC)와는 다른 값이니,
+     추후 전체 앱 톤을 통일하고 싶으면 이 블록만 바꾸면 됩니다. */
+  --color-action-primary: #3581ff;
+  --color-blue-cta: #3581ff;
+  --color-blue-500: #3581ff;
+  --color-blue-090: #dcebff;
+  --color-blue-50: #ebf4ff;
+  --color-icon-brand: #3581ff;
+  --color-navy: #194059; /* brand.navy */
+  --color-light-blue: #4c9dd1; /* brand.lightBlue */
+
+  /* Point (경고/강조) */
+  --color-point-red: #f34876;
+  --color-point-pink: #ffcad9;
+  --color-point-bg: #fff2f2;
+
+  /* Yellow (알림) */
+  --color-yellow-dark: #856f00;
+  --color-yellow-main: #fff3b6;
+  --color-yellow-light: #fffbe6;
+
+  /* Radius */
+  --radius-button-lg: 12px;
+
+  /* Spacing */
+  --spacing-card-padding: 16px;
+  --spacing-screen: 20px;
+}
