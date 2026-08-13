@@ -6,6 +6,8 @@ import OfferScheduleStep from './pages/offer/OfferScheduleStep';
 import OfferConditionsStep from './pages/offer/OfferConditionsStep';
 import OfferCompleteStep from './pages/offer/OfferCompleteStep';
 import OfferSummaryPage from './pages/offer/OfferSummaryPage';
+import AgentStatusPage from './pages/status/AgentStatusPage';
+import NegotiationCandiatePage from './pages/status/NegotiationCandiatePage';
 
 import HomePage from '@/pages/home/HomePage';
 export default function App() {
@@ -24,6 +26,11 @@ export default function App() {
           element={<OfferConditionsStep />}
         />
         <Route path={ROUTES.offerNewComplete} element={<OfferCompleteStep />} />
+        <Route
+          path={ROUTES.NegotiationCandiatePage}
+          element={<NegotiationCandiatePage />}
+        />
+        <Route path={ROUTES.negotiation} element={<AgentStatusPage />} />
       </Routes>
     </BrowserRouter>
   );
