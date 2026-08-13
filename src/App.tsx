@@ -17,6 +17,7 @@ import DrivingMode1Page from '@/pages/driving/drivingMode1';
 import DrivingMode2Page from '@/pages/driving/drivingMode2';
 import DrivingMode3Page from '@/pages/driving/drivingMode3';
 import Reassembly from '@/pages/driving/Reassembly';
+import DailyReportPage from '@/pages/report/DailyReportPage';
 export default function App() {
   return (
     <BrowserRouter>
@@ -59,6 +60,7 @@ export default function App() {
         <Route path={ROUTES.drivingMode2} element={<DrivingMode2Page />} />
         <Route path={ROUTES.drivingMode3} element={<DrivingMode3Page />} />
         <Route path={ROUTES.Reassembly} element={<Reassembly />} />
+        <Route path={ROUTES.dailyReport} element={<DailyReportPage />} />
       </Routes>
     </BrowserRouter>
   );
