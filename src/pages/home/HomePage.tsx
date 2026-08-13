@@ -212,7 +212,7 @@ export default function HomePage() {
           pkg={drivingPackage}
           loading={statusLoading}
           onClickBanner={() =>
-            navigate(drivingPackage ? ROUTES.drivingMode1 : ROUTES.onboarding)
+            navigate(drivingPackage ? ROUTES.drivingMode1 : ROUTES.myCriteria)
           }
         />
       </div>

@@ -3,7 +3,7 @@ export const ROUTES = {
   offer: '/offer',
   negotiation: '/negotiation',
   myCriteria: '/offer/new/cost',
-  onboarding: '/onboarding',
+  NegotiationCandiatePage: '/negotiation/candidates',
   offerNewSchedule: '/offer/new/schedule',
   offerNewConditions: '/offer/new/conditions',
   offerNewComplete: '/offer/new/complete',
