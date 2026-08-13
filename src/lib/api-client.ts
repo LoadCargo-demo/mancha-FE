@@ -1,4 +1,8 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
+// 프로덕션(Vercel)에서는 상대 경로를 써서 vercel.json의 /api rewrite 프록시를 타야 합니다.
+// 절대 URL(http://...)을 쓰면 HTTPS 페이지에서 mixed content로 차단됩니다.
+const BASE_URL = import.meta.env.PROD
+  ? ''
+  : (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000');
 const DEMO_DRIVER_ID = import.meta.env.VITE_DEMO_DRIVER_ID ?? 'driver_kimmansu';
 
 export class ApiError extends Error {
