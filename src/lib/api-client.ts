@@ -50,7 +50,7 @@ export async function apiFetch<T>(
   return data as T;
 }
 
-function connectSocket(path: string): WebSocket {
+export function connectSocket(path: string): WebSocket {
   const wsBase = import.meta.env.VITE_WS_BASE_URL ?? 'ws://localhost:8000';
   return new WebSocket(`${wsBase}${withDriverId(path)}`);
 }
