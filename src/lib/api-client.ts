@@ -17,6 +17,19 @@ function resolveDriverId(): string {
   return id;
 }
 
+// 백엔드 /api/registration/prefill 등에서 쿼리 파라미터로 받는 session_id.
+// "프론트에서 기기/탭별로 발급하는 고유 세션 ID" — sessionStorage 기반이라
+// 탭을 닫으면 사라지고, 새 탭/새 기기는 각자 다른 UUID를 받는다.
+function resolveSessionId(): string {
+  const key = 'mancha_session_id';
+  let id = sessionStorage.getItem(key);
+  if (!id) {
+    id = crypto.randomUUID();
+    sessionStorage.setItem(key, id);
+  }
+  return id;
+}
+
 export class ApiError extends Error {
   status: number;
   body: unknown;
@@ -36,8 +49,11 @@ type ApiFetchOptions = Omit<RequestInit, 'body'> & {
 
 function withDriverId(path: string, skip?: boolean): string {
   if (skip) return path;
+  const params = new URLSearchParams();
+  params.set('driver_id', resolveDriverId());
+  params.set('session_id', resolveSessionId());
   const separator = path.includes('?') ? '&' : '?';
-  return `${path}${separator}driver_id=${encodeURIComponent(resolveDriverId())}`;
+  return `${path}${separator}${params.toString()}`;
 }
 
 export async function apiFetch<T>(
