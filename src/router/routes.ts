@@ -15,6 +15,7 @@ export const ROUTES = {
   drivingMode2: '/driving/2',
   drivingMode3: '/driving/3',
   Reassembly: '/Reassembly',
+  dailyReport: '/daily-report',
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;
